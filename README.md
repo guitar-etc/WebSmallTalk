@@ -1,9 +1,12 @@
+## scripts
+a_z.sh:
+- 처음 리포를 클론한 뒤에 실행하면 다 설치하고 서버를 띄운다.
+
+*:
+- 사용 방식과 파일 이름을 보면 다 알 수 있다.
+
 ## src의 설명
-Tools
-
-npx http-server src/
-
-1. RESTful services
+1. RESTful services: 각각 호출
 2. Data duplication: `1_one`
 3. Data Inconsistency: `2_two`
 4. How to sync
