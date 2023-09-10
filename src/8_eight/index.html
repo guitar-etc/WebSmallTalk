@@ -1,0 +1,108 @@
+<body id="body">
+<h1>
+    Runs와 Approvals. 
+</h1>
+
+
+</body>
+<script>
+    const httpRequest = new XMLHttpRequest();
+    function displayToDom(text) {
+        const pre = document.createElement("pre")
+        body.appendChild(pre)
+        pre.textContent = text;
+    }
+
+    function handler() {
+        // Process the server response here.
+        if (httpRequest.readyState === XMLHttpRequest.DONE) {
+            // Everything is good, the response was received.
+            displayToDom(httpRequest.responseURL + ": " + httpRequest.responseText);
+        } else {
+            console.log(httpRequest.readyState)
+        }
+    }
+
+    httpRequest.onreadystatechange = handler;
+
+    function removeComments(jsonString) {
+        return jsonString.replace(/\\"|"(?:\\"|[^"])*"|(\/\/.*|\/\*[\s\S]*?\*\/)/g, (m, g) => g ? "" : m);
+    }
+    function parse(responseText) {
+        return JSON.parse(removeComments(responseText))
+    }
+
+    httpRequest.open("GET", "http://localhost:8080/8_eight/server/runs.json", false);
+    httpRequest.send();
+    runs = parse(httpRequest.responseText)
+
+    httpRequest.open("GET", "http://localhost:8080/8_eight/server/approvals.json", false);
+    httpRequest.send();
+    approvals = parse(httpRequest.responseText)
+
+    runs_response = {
+        "3": {
+            "name": "New: Pearson",
+            "approvals": [
+                {
+                    "type": "approval", 
+                    "id": "3", 
+                    "value": {"provider": "3"}
+                }
+            ] // run 추가 후에 approval 3이 추가 됐다.
+        }
+    }
+    displayToDom("POST /runs : " + JSON.stringify(runs_response, null, 2))
+    console.log("runs_response", runs_response)
+    alert(`POST '/runs' succeeded. POST response is in console`)
+
+    console.log("runs", runs)
+    Object.assign(runs, runs_response)
+    console.log("runs: after", runs)
+    displayToDom("runs after update" + JSON.stringify(runs, null, 2))
+    alert("updated runs cache")
+
+    console.log("approvals", approvals)
+    for (run of Object.values(runs_response)) {
+        for (approval of run.approvals) {
+            // 원래는 type을 보고 어떤 캐시를 업데이트 할지 결정해야 한다.
+            if (approval.type === "approval") {
+                // 묻지도 따지지도 않고 덮어 씌운다.
+                approvals[approval.id] = approval.value
+            }
+            else {
+                // 원래는 `runs`와 `approvals`가 아닌 dict를 만들어서 타입 별로 dict를 동적으로 만들면 된다.
+                throw new Error(approval.type)
+            }
+        }
+    }
+    console.log("approvals: after", approvals)
+    displayToDom("approvals after update" + JSON.stringify(approvals, null, 2))
+    alert("updated approvals cache")
+
+    function getApproval(run) {
+        result = approvals?.[run.approvals[0].id]
+        if (result === undefined) {
+            console.log("APPROVALS CACHE MISS", run.approvals[0])
+            httpRequest.open("GET", "http://localhost:8080/8_eight/server/approvals_reloaded.json", false);
+            httpRequest.send();
+            approvals = parse(httpRequest.responseText)
+
+            result = approvals[run.approvals[0]]
+        }
+        return result
+    }
+
+    try {
+        for (run of Object.entries(runs)) {
+            console.log("run", run)
+            approval = getApproval(run[1])
+            console.log("approval", approval)
+            console.log("provider", approval.provider)
+        }
+    } catch (e) {
+        setTimeout(() => alert(e))
+        throw e
+    }
+
+</script>

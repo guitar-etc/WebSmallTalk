@@ -1,0 +1,109 @@
+<body id="body">
+<h1>
+    Runs와 Approvals. 
+</h1>
+
+
+</body>
+<script>
+    const httpRequest = new XMLHttpRequest();
+    function displayToDom(text) {
+        const pre = document.createElement("pre")
+        body.appendChild(pre)
+        pre.textContent = text;
+    }
+
+    function handler() {
+        // Process the server response here.
+        if (httpRequest.readyState === XMLHttpRequest.DONE) {
+            // Everything is good, the response was received.
+            displayToDom(httpRequest.responseURL + ": " + httpRequest.responseText);
+        } else {
+            console.log(httpRequest.readyState)
+        }
+    }
+
+    httpRequest.onreadystatechange = handler;
+
+    function removeComments(jsonString) {
+        return jsonString.replace(/\\"|"(?:\\"|[^"])*"|(\/\/.*|\/\*[\s\S]*?\*\/)/g, (m, g) => g ? "" : m);
+    }
+    function parse(responseText) {
+        return JSON.parse(removeComments(responseText))
+    }
+
+    cache = {"run": {}, "approval": {}}
+    function runs() {
+        return cache["run"]
+    }
+    function approvals() {
+        return cache["approval"]
+    }
+
+    httpRequest.open("GET", "http://localhost:8080/9_nine/server/runs.json", false);
+    httpRequest.send();
+    Object.assign(runs(), parse(httpRequest.responseText))
+
+    httpRequest.open("GET", "http://localhost:8080/9_nine/server/approvals.json", false);
+    httpRequest.send();
+    Object.assign(approvals(), parse(httpRequest.responseText))
+
+    displayToDom("cache : " + JSON.stringify(cache, null, 2))
+    runs_response = {
+        "3": {
+            "name": "New: Pearson",
+            "approvals": [
+                {
+                    "type": "approval", 
+                    "id": "3", 
+                    "value": {"provider": "3"}
+                }
+            ] // run 추가 후에 approval 3이 추가 됐다.
+        }
+    }
+    displayToDom("POST /runs : " + JSON.stringify(runs_response, null, 2))
+    console.log("runs_response", runs_response)
+    alert(`POST '/runs' succeeded. POST response is in console`)
+
+    console.log("runs", runs())
+    Object.assign(runs(), runs_response)
+    console.log("runs: after", runs())
+    alert("updated runs cache")
+
+    console.log("approvals", approvals())
+    for (item0 of Object.values(runs_response)) {
+        for (item1 of item0.approvals) {
+            cache[item1.type][item1.id] = item1.value
+        }
+    }
+    console.log("approvals: after", approvals())
+    alert("updated approvals cache")
+
+    displayToDom("updated cache : " + JSON.stringify(cache, null, 2))
+
+    function getApproval(run) {
+        result = approvals()?.[run.approvals[0].id]
+        if (result === undefined) {
+            console.log("APPROVALS CACHE MISS", run.approvals[0])
+            httpRequest.open("GET", "http://localhost:8080/9_nine/server/approvals_reloaded.json", false);
+            httpRequest.send();
+
+            Object.assign(approvals(), parse(httpRequest.responseText))
+            result = approvals()[run.approvals[0]]
+        }
+        return result
+    }
+
+    try {
+        for (run of Object.entries(runs())) {
+            console.log("run", run)
+            approval = getApproval(run[1])
+            console.log("approval", approval)
+            console.log("provider", approval.provider)
+        }
+    } catch (e) {
+        setTimeout(() => alert(e))
+        throw e
+    }
+
+</script>

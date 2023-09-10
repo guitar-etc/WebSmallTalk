@@ -1,0 +1,11 @@
+{
+    "1": {
+        "name": "Count",
+        "approvals": [{"type": "approval", "id": "1"}] // run에는 approval은 무조건 있다고 가정.
+    },
+    "2": {
+        "name": "Average",
+        "approvals": [{"type": "approval", "id": "2"}]
+    }
+    // reload 전이라서 run 3이 없다.
+}
