@@ -1,0 +1,10 @@
+{
+    "1": {
+        "name": "Count",
+        "approvals": ["1"] // run에는 approval은 무조건 있다고 가정.
+    },
+    "2": {
+        "name": "Average",
+        "approvals": ["2"]
+    }
+}

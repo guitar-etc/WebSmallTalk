@@ -1,0 +1,35 @@
+<body id="body">
+<h1>
+    Runs와 Approvals. 
+</h1>
+<div>
+    Run목록은 각 Run 마다 어떤 Approval이 할당되어 있는지 확인할 수 있습니다.
+
+    하지만 Run에 할당 돼있는 Approval이 현재 Approval 목록에 없을 수도 있습니다.
+    이럴 경우에 데이터가 동기화 되지 않은 상태라고 합시다. 데이터가 씽크 돼지 않았다고 하죠.
+</div>
+
+</body>
+<script>
+    const httpRequest = new XMLHttpRequest();
+    function handler() {
+        // Process the server response here.
+        console.log(httpRequest.responseText)
+        if (httpRequest.readyState === XMLHttpRequest.DONE) {
+            // Everything is good, the response was received.
+            const pre = document.createElement("pre")
+            body.appendChild(pre)
+            pre.textContent = httpRequest.responseURL + ": " + httpRequest.responseText;
+        } else {
+            console.log(httpRequest.readyState)
+        }
+    }
+
+    httpRequest.onreadystatechange = handler;
+
+    httpRequest.open("GET", "http://localhost:8080/2_two/server/runs.json", false);
+    httpRequest.send();
+
+    httpRequest.open("GET", "http://localhost:8080/2_two/server/approvals.json", false);
+    httpRequest.send();
+</script>

@@ -1,0 +1,14 @@
+{
+    "1": {
+        "name": "Count",
+        "approvals": ["1"] // run에는 approval은 무조건 있다고 가정.
+    },
+    "2": {
+        "name": "Average",
+        "approvals": ["2"]
+    },
+    "3": {
+        "name": "New: Pearson",
+        "approvals": ["3"] // run 추가 후에 approval 3이 추가 됐다.
+    }
+}
